@@ -3,38 +3,950 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Roofing CRM Workflow Demo</title>
+  <title>Roofing CRM Workflow Demo v2</title>
   <style>
-    :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --panel-2: #1f2937;
-      --card: #ffffff;
-      --muted: #94a3b8;
-      --text: #e5e7eb;
-      --accent: #22c55e;
-      --accent-2: #0ea5e9;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --retail: #a855f7;
-      --insurance: #22c55e;
-      --shadow: 0 12px 30px rgba(0,0,0,.28);
-      --radius: 18px;
+    :root{
+      --bg:#0b1220;
+      --panel:#111827;
+      --panel2:#1f2937;
+      --line:rgba(255,255,255,.08);
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --green:#22c55e;
+      --blue:#0ea5e9;
+      --amber:#f59e0b;
+      --purple:#a855f7;
+      --red:#ef4444;
+      --shadow:0 18px 40px rgba(0,0,0,.28);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#08101d 0%,#0f172a 100%);
+      color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:30;
+      background:rgba(11,18,32,.92);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+      padding:18px 22px;
+    }
+    .header-wrap{
+      display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap;
+    }
+    h1,h2,h3,h4,p{margin:0}
+    .sub{color:var(--muted); font-size:14px; margin-top:6px}
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap}
+    button, .pill{
+      border:0; border-radius:12px; padding:10px 14px; font-weight:700; font-size:14px;
+    }
+    button{cursor:pointer; color:#fff; background:var(--blue); box-shadow:var(--shadow)}
+    button.secondary{background:#334155}
+    button.success{background:var(--green); color:#052e16}
+    button.warn{background:var(--amber); color:#111827}
+    button.purple{background:var(--purple)}
+    button.red{background:var(--red)}
+    .wrap{padding:22px; display:grid; gap:20px}
+    .grid-2{display:grid; grid-template-columns:1.2fr .8fr; gap:20px}
+    .grid-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px}
+    .panel{
+      background:rgba(17,24,39,.92);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:var(--shadow);
+    }
+    .metrics{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:14px}
+    .metric{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:16px;
+      padding:14px;
+    }
+    .metric .value{font-size:28px; font-weight:800}
+    .metric .label{font-size:12px; color:var(--muted); margin-top:4px}
+    .path{
+      margin-top:12px; padding:12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.04)
+    }
+    .path strong{display:block; margin-bottom:6px}
+    .forms{
+      display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px;
+    }
+    label{
+      display:flex; flex-direction:column; gap:7px;
+      color:var(--muted); font-size:13px;
+    }
+    input,select,textarea{
+      width:100%; background:rgba(255,255,255,.04); color:var(--text);
+      border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:11px 12px;
+      font:inherit;
+    }
+    textarea{min-height:88px; resize:vertical}
+    .full{grid-column:1 / -1}
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    .kanban{
+      display:grid; grid-template-columns:repeat(6,minmax(260px,1fr));
+      gap:14px; overflow-x:auto; padding-bottom:6px; margin-top:14px;
+    }
+    .col{
+      min-height:420px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:18px; padding:12px;
+    }
+    .col.drag-over{outline:2px dashed var(--blue); outline-offset:-6px}
+    .col-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px}
+    .count{
+      min-width:24px; height:24px; border-radius:999px; display:grid; place-items:center;
+      background:rgba(255,255,255,.08); color:var(--text); font-size:12px
+    }
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.05));
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:16px; padding:12px; margin-bottom:10px;
+      cursor:grab;
+    }
+    .card.dragging{opacity:.55}
+    .card h4{font-size:16px; margin-bottom:6px}
+    .meta{font-size:12px; color:var(--muted); line-height:1.55}
+    .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .pill{
+      padding:7px 10px; font-size:12px; background:rgba(255,255,255,.08); color:var(--text)
+    }
+    .insurance{background:rgba(34,197,94,.18); color:#bbf7d0}
+    .retail{background:rgba(168,85,247,.18); color:#e9d5ff}
+    .warnpill{background:rgba(245,158,11,.18); color:#fde68a}
+    .card-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .card-actions button{padding:8px 10px; font-size:12px; box-shadow:none}
+    .stack{display:grid; gap:10px; margin-top:12px}
+    .item{
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px; padding:12px;
+    }
+    .templates{display:grid; gap:10px; margin-top:12px}
+    .template-tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab-btn{padding:8px 10px; font-size:12px}
+    .template-box{
+      white-space:pre-wrap;
+      min-height:180px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px; padding:12px; color:#dbeafe;
+    }
+    .photos{
+      display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px;
+    }
+    .photo{
+      min-height:82px; border-radius:14px;
+      background:linear-gradient(135deg,#1e293b,#334155);
+      border:1px dashed rgba(255,255,255,.18);
+      display:grid; place-items:center; color:#cbd5e1; font-size:13px;
+    }
+    .proposal{
+      background:#fff; color:#111827; border-radius:16px; padding:18px; margin-top:12px;
+    }
+    .proposal h3{margin-bottom:6px}
+    .proposal small{color:#64748b}
+    .proposal-grid{
+      display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;
+    }
+    .proposal .box{
+      background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px;
+    }
+    .proposal .line{
+      display:flex; justify-content:space-between; gap:12px; padding:6px 0;
+      border-bottom:1px solid #e2e8f0;
+    }
+    .proposal .line:last-child{border-bottom:0}
+    .muted{color:var(--muted)}
+    .hidden{display:none}
+    .footer-note{font-size:12px; color:var(--muted)}
+    @media (max-width:1100px){
+      .grid-2,.grid-3,.forms{grid-template-columns:1fr}
+      .metrics{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:700px){
+      .wrap{padding:14px}
+      .metrics{grid-template-columns:1fr}
+      .photos{grid-template-columns:1fr 1fr}
+      .proposal-grid{grid-template-columns:1fr}
+    }
+    @media print{
+      body{background:#fff}
+      header,.no-print{display:none!important}
+      .wrap,.panel{padding:0; box-shadow:none; border:0; background:#fff}
+      .proposal-print{display:block!important}
+    }
+  </style>
+</head>
+<body>
+  <header class="no-print">
+    <div class="header-wrap">
+      <div>
+        <h1>Roofing CRM Workflow Demo v2</h1>
+        <p class="sub">Local save, drag-and-drop board, SMS/email templates, and printable proposal view.</p>
+      </div>
+      <div class="toolbar">
+        <button class="success" onclick="seedStormLeads()">Import Hail Trace Leads</button>
+        <button onclick="seedAICalls()">Add AI Call Leads</button>
+        <button class="purple" onclick="openProposalBuilder()">Proposal Builder</button>
+        <button class="secondary" onclick="exportData()">Export JSON</button>
+        <button class="warn" onclick="loadSeedData()">Reload Demo</button>
+        <button class="red" onclick="clearAllData()">Clear Saved Data</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="grid-2">
+      <div class="panel">
+        <h2>Pipeline Overview</h2>
+        <p class="sub">Tracks lead intake, inspection, proposal, claim follow-up, production, and review requests.</p>
+        <div id="metrics" class="metrics"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Conditional Workflow</h2>
+        <div class="path">
+          <strong>Insurance Path</strong>
+          Website / AI / Hail Trace → Inspection Scheduled → Damage Confirmed → Claim Filed / Pending → Adjuster Appointment → Approved Scope → Build Scheduled → Review Request
+        </div>
+        <div class="path">
+          <strong>Retail Path</strong>
+          Website / AI / Hail Trace → Inspection Scheduled → Retail Estimate → Proposal Sent → Follow-up → Contract Signed → Build Scheduled → Review Request
+        </div>
+        <div class="chips">
+          <span class="pill insurance">Insurance branch</span>
+          <span class="pill retail">Retail branch</span>
+          <span class="pill warnpill">Day 3 claim check</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel no-print">
+      <h2>Lead Intake</h2>
+      <div class="forms">
+        <label>Homeowner name<input id="name" placeholder="John Carter"></label>
+        <label>Lead source
+          <select id="source">
+            <option>Website Form</option>
+            <option>AI Call</option>
+            <option>Hail Trace Import</option>
+            <option>Referral</option>
+          </select>
+        </label>
+        <label>Phone<input id="phone" placeholder="937-555-0188"></label>
+        <label>Email<input id="email" placeholder="john@example.com"></label>
+        <label>Address<input id="address" placeholder="123 Main St, Dayton, OH"></label>
+        <label>Storm date<input id="stormDate" type="date"></label>
+        <label>Job path
+          <select id="jobType" onchange="renderPathHint()">
+            <option value="Insurance">Insurance</option>
+            <option value="Retail">Retail</option>
+          </select>
+        </label>
+        <label>Roof type
+          <select id="roofType">
+            <option>Architectural Shingle</option>
+            <option>3-Tab Shingle</option>
+            <option>Metal</option>
+            <option>Flat / TPO</option>
+            <option>Tile</option>
+          </select>
+        </label>
+        <label>Damage type
+          <select id="damageType">
+            <option>Hail</option>
+            <option>Wind</option>
+            <option>Leak / Aging</option>
+            <option>Tree Impact</option>
+            <option>Missing Shingles</option>
+          </select>
+        </label>
+        <label>Insurance claim status
+          <select id="claimStatus">
+            <option>Not Filed</option>
+            <option>Filed</option>
+            <option>Pending Inspection</option>
+            <option>Adjuster Scheduled</option>
+            <option>Approved</option>
+            <option>Denied</option>
+          </select>
+        </label>
+        <label>Inspection date<input id="inspectionDate" type="datetime-local"></label>
+        <label>Adjuster date<input id="adjusterDate" type="datetime-local"></label>
+        <label class="full">Notes<textarea id="notes" placeholder="Caller reported hail event, wants Saturday inspection, possible soft metals hit."></textarea></label>
+      </div>
+      <div class="actions">
+        <button class="success" onclick="addLeadFromForm()">Create Lead</button>
+        <button class="secondary" onclick="fillSample()">Load Sample</button>
+      </div>
+      <div id="pathHint" class="path"></div>
+    </section>
+
+    <section class="panel no-print">
+      <h2>Interactive Board</h2>
+      <p class="sub">Drag cards between stages. All changes save automatically in localStorage.</p>
+      <div id="kanban" class="kanban"></div>
+    </section>
+
+    <section class="grid-3">
+      <div class="panel no-print">
+        <h2>Automations</h2>
+        <div id="automations" class="stack"></div>
+      </div>
+
+      <div class="panel no-print">
+        <h2>Templates</h2>
+        <div class="template-tabs">
+          <button class="secondary tab-btn" onclick="setTemplate('claimText')">Claim text</button>
+          <button class="secondary tab-btn" onclick="setTemplate('adjusterText')">Adjuster text</button>
+          <button class="secondary tab-btn" onclick="setTemplate('retailEmail')">Retail email</button>
+          <button class="secondary tab-btn" onclick="setTemplate('reviewText')">Review text</button>
+        </div>
+        <div id="templateBox" class="template-box"></div>
+        <div class="actions">
+          <button onclick="copyTemplate()">Copy Template</button>
+          <button class="secondary" onclick="openProposalBuilder()">Use Selected Lead</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Proposal Assets</h2>
+        <div class="photos">
+          <div class="photo">Front Elevation</div>
+          <div class="photo">Hail Hits</div>
+          <div class="photo">Soft Metals</div>
+          <div class="photo">Test Square</div>
+          <div class="photo">Interior Leak</div>
+          <div class="photo">Scope Summary</div>
+        </div>
+        <div class="stack" style="margin-top:12px">
+          <div class="item">Photo checklist: front, rear, left slope, right slope, soft metals, vents, gutters, interior stains.</div>
+          <div class="item">Proposal logic: insurance jobs show claim workflow notes; retail jobs show estimate, financing, and close follow-up.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Proposal Builder</h2>
+      <p class="sub no-print">Choose a lead and print this section as a customer-facing estimate or scope summary.</p>
+
+      <div class="forms no-print">
+        <label>Selected lead
+          <select id="proposalLead" onchange="renderProposal()"></select>
+        </label>
+        <label>Squares<input id="proposalSquares" type="number" min="1" value="26" onchange="renderProposal()"></label>
+        <label>Tear-off cost<input id="proposalTearoff" type="number" min="0" value="2500" onchange="renderProposal()"></label>
+        <label>Material cost<input id="proposalMaterial" type="number" min="0" value="7400" onchange="renderProposal()"></label>
+        <label>Labor cost<input id="proposalLabor" type="number" min="0" value="4600" onchange="renderProposal()"></label>
+        <label>Supplements / upgrades<input id="proposalUpgrade" type="number" min="0" value="850" onchange="renderProposal()"></label>
+        <label>Deductible / deposit<input id="proposalCustomerPortion" type="number" min="0" value="1000" onchange="renderProposal()"></label>
+        <label class="full">Scope notes<textarea id="proposalNotes" onchange="renderProposal()">Includes tear-off, synthetic underlayment, starter, ridge cap, ventilation review, and site cleanup.</textarea></label>
+      </div>
+
+      <div class="actions no-print">
+        <button class="purple" onclick="window.print()">Print Proposal</button>
+        <button class="secondary" onclick="renderProposal()">Refresh Proposal</button>
+      </div>
+
+      <div id="proposalView" class="proposal proposal-print"></div>
+    </section>
+
+    <section class="panel no-print">
+      <h2>Saved Status</h2>
+      <p class="footer-note">Data saves in this browser automatically after lead creation, drag-and-drop, editing, and board actions.</p>
+      <div id="saveStatus" class="item">Ready.</div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'roofingCRMv2Data';
+    const TEMPLATE_KEY = 'roofingCRMv2Template';
+    const columns = [
+      'New Lead',
+      'Inspection Scheduled',
+      'Proposal / Scope',
+      'Awaiting Claim / Decision',
+      'Production',
+      'Review Requested'
+    ];
+
+    const defaultAutomations = [
+      'Instant confirmation text after website form or AI call submission.',
+      'Auto-tag storm leads imported from Hail Trace by neighborhood and storm date.',
+      'Inspection reminder text 24 hours before appointment with reschedule link.',
+      'Proposal email with photos, scope summary, and financing or deductible guidance.',
+      'Day 3 insurance claim status text/email if claim status is Filed or Pending Inspection.',
+      'Adjuster appointment reminder 24 hours before scheduled meeting.',
+      'Post-project thank-you text and review request 2 days after completion.'
+    ];
+
+    const templates = {
+      claimText: `Hi {{name}}, this is Craig with A Veteran's Touch. Just checking in on your roof claim. Were you able to file it yet, and has the carrier given you a claim number or next step?`,
+      adjusterText: `Hi {{name}}, reminder that your adjuster appointment is set for {{adjusterDate}}. I’ll be there to document the damage, review the scope, and help keep the process moving.`,
+      retailEmail: `Subject: Your Roof Proposal
+
+Hi {{name}},
+
+Thanks again for meeting with us. I attached your roof proposal with photos and scope details. Based on what we found, the recommended next step is to move forward with scheduling and materials.
+
+Reply here or call {{phone}} with any questions.`,
+      reviewText: `Hi {{name}}, thank you again for trusting A Veteran's Touch with your roof project. If the job earned it, would you take a minute to leave a review? Your feedback really helps local homeowners find us.`
+    };
+
+    let state = {
+      leads: [],
+      automations: [...defaultAutomations],
+      selectedLeadId: null,
+      activeTemplate: 'claimText'
+    };
+
+    function seedData(){
+      return [
+        {
+          id: 1,
+          name: 'Mark Benson',
+          source: 'Hail Trace Import',
+          phone: '937-555-0101',
+          email: 'mark.benson@email.com',
+          address: '118 Oak Ridge Dr, Dayton, OH',
+          stormDate: '2026-04-22',
+          roofType: 'Architectural Shingle',
+          damageType: 'Hail',
+          claimStatus: 'Filed',
+          jobType: 'Insurance',
+          inspectionDate: '2026-05-06T15:00',
+          adjusterDate: '2026-05-10T09:00',
+          stage: 'Awaiting Claim / Decision',
+          notes: 'Inspection complete. Soft metals and 9 hail hits in test square. Day 3 claim check queued.',
+          nextAction: 'Text claim status check on day 3'
+        },
+        {
+          id: 2,
+          name: 'Lisa Turner',
+          source: 'Website Form',
+          phone: '937-555-0102',
+          email: 'lisa.turner@email.com',
+          address: '442 Cedar Ln, Englewood, OH',
+          stormDate: '',
+          roofType: 'Metal',
+          damageType: 'Leak / Aging',
+          claimStatus: 'Not Filed',
+          jobType: 'Retail',
+          inspectionDate: '2026-05-07T11:00',
+          adjusterDate: '',
+          stage: 'Proposal / Scope',
+          notes: 'Retail estimate pending with photo set and financing option.',
+          nextAction: 'Send proposal follow-up tomorrow'
+        },
+        {
+          id: 3,
+          name: 'Sam Delaney',
+          source: 'AI Call',
+          phone: '937-555-0103',
+          email: 'sam.delaney@email.com',
+          address: '912 Maple Ave, Troy, OH',
+          stormDate: '2026-04-28',
+          roofType: '3-Tab Shingle',
+          damageType: 'Wind',
+          claimStatus: 'Pending Inspection',
+          jobType: 'Insurance',
+          inspectionDate: '2026-05-08T10:00',
+          adjusterDate: '',
+          stage: 'Inspection Scheduled',
+          notes: 'AI captured storm date and leak over garage. Saturday 10 AM inspection.',
+          nextAction: 'Inspection reminder 24 hours before appointment'
+        },
+        {
+          id: 4,
+          name: 'Nina Wallace',
+          source: 'Referral',
+          phone: '937-555-0104',
+          email: 'nina.wallace@email.com',
+          address: '61 Brookfield Ct, Springfield, OH',
+          stormDate: '',
+          roofType: 'Architectural Shingle',
+          damageType: 'Missing Shingles',
+          claimStatus: 'Approved',
+          jobType: 'Insurance',
+          inspectionDate: '2026-05-03T13:30',
+          adjusterDate: '2026-05-04T14:00',
+          stage: 'Production',
+          notes: 'Approved scope received. Waiting on shingle color selection and install date.',
+          nextAction: 'Confirm build date and material order'
+        }
+      ];
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
-      color: var(--text);
+    function init(){
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if(saved){
+        try {
+          state = JSON.parse(saved);
+        } catch(e){
+          state.leads = seedData();
+          state.automations = [...defaultAutomations];
+          state.selectedLeadId = 1;
+          state.activeTemplate = 'claimText';
+        }
+      } else {
+        state.leads = seedData();
+        state.automations = [...defaultAutomations];
+        state.selectedLeadId = 1;
+        state.activeTemplate = 'claimText';
+        saveState('Loaded default demo data.');
+      }
+      if(!state.leads || !state.leads.length) state.leads = seedData();
+      if(!state.automations || !state.automations.length) state.automations = [...defaultAutomations];
+      if(!state.activeTemplate) state.activeTemplate = 'claimText';
+      renderAll();
     }
 
-    header {
-      padding: 22px 26px;
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      position: sticky;
+    function saveState(msg='Saved changes.'){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const box = document.getElementById('saveStatus');
+      if(box) box.textContent = msg + ' ' + new Date().toLocaleString();
+    }
+
+    function currency(n){
+      return Number(n || 0).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
+    }
+
+    function fmtDate(val){
+      if(!val) return 'Not set';
+      const d = new Date(val);
+      if(Number.isNaN(d.getTime())) return val;
+      return d.toLocaleString();
+    }
+
+    function getLead(id){
+      return state.leads.find(l => String(l.id) === String(id));
+    }
+
+    function renderMetrics(){
+      const total = state.leads.length;
+      const insurance = state.leads.filter(l=>l.jobType==='Insurance').length;
+      const retail = state.leads.filter(l=>l.jobType==='Retail').length;
+      const followUps = state.leads.filter(l=>['Filed','Pending Inspection','Adjuster Scheduled'].includes(l.claimStatus)).length;
+      document.getElementById('metrics').innerHTML = `
+        <div class="metric"><div class="value">${total}</div><div class="label">Active leads</div></div>
+        <div class="metric"><div class="value">${insurance}</div><div class="label">Insurance jobs</div></div>
+        <div class="metric"><div class="value">${retail}</div><div class="label">Retail jobs</div></div>
+        <div class="metric"><div class="value">${followUps}</div><div class="label">Claim follow-ups due</div></div>
+      `;
+    }
+
+    function renderPathHint(){
+      const jobType = document.getElementById('jobType').value;
+      document.getElementById('pathHint').innerHTML = jobType === 'Insurance'
+        ? '<strong>Insurance conditional path</strong>Lead enters claim workflow, receives day 3 claim check, then adjuster appointment reminders and approved-scope follow-up.'
+        : '<strong>Retail conditional path</strong>Lead skips claim workflow and receives estimate follow-up, financing prompts, and close reminders.';
+    }
+
+    function renderAutomations(){
+      document.getElementById('automations').innerHTML = state.automations.map(a => `<div class="item">${a}</div>`).join('');
+    }
+
+    function renderTemplates(){
+      document.getElementById('templateBox').textContent = buildTemplate(state.activeTemplate);
+    }
+
+    function buildTemplate(key){
+      const lead = getLead(state.selectedLeadId) || state.leads[0] || {};
+      let text = templates[key] || '';
+      return text
+        .replaceAll('{{name}}', lead.name || 'Homeowner')
+        .replaceAll('{{adjusterDate}}', fmtDate(lead.adjusterDate))
+        .replaceAll('{{phone}}', lead.phone || 'your office number');
+    }
+
+    function setTemplate(key){
+      state.activeTemplate = key;
+      localStorage.setItem(TEMPLATE_KEY, key);
+      renderTemplates();
+      saveState('Updated active template.');
+    }
+
+    async function copyTemplate(){
+      const text = buildTemplate(state.activeTemplate);
+      try {
+        await navigator.clipboard.writeText(text);
+        saveState('Copied template to clipboard.');
+      } catch(e){
+        saveState('Clipboard copy blocked. Select and copy manually.');
+      }
+    }
+
+    function cardHTML(lead){
+      return `
+        <div class="card" draggable="true" data-id="${lead.id}" onclick="selectLead(${lead.id})">
+          <h4>${lead.name}</h4>
+          <div class="meta">
+            ${lead.source}<br>
+            ${lead.jobType} · ${lead.roofType}<br>
+            Damage: ${lead.damageType}<br>
+            Claim: ${lead.claimStatus}<br>
+            Inspection: ${lead.inspectionDate ? fmtDate(lead.inspectionDate) : 'Not set'}<br>
+            Next: ${lead.nextAction}
+          </div>
+          <div class="chips">
+            <span class="pill ${lead.jobType === 'Insurance' ? 'insurance' : 'retail'}">${lead.jobType}</span>
+            <span class="pill">${lead.damageType}</span>
+          </div>
+          <div class="card-actions">
+            <button onclick="event.stopPropagation();advanceLead(${lead.id})">Advance</button>
+            <button class="secondary" onclick="event.stopPropagation();scheduleInspection(${lead.id})">Schedule</button>
+            <button class="purple" onclick="event.stopPropagation();openProposalForLead(${lead.id})">Proposal</button>
+            <button class="red" onclick="event.stopPropagation();deleteLead(${lead.id})">Delete</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderKanban(){
+      const board = document.getElementById('kanban');
+      board.innerHTML = columns.map(col => {
+        const cards = state.leads.filter(l=>l.stage===col).map(cardHTML).join('') || `<div class="meta">No leads in this stage.</div>`;
+        return `
+          <div class="col" data-stage="${col}">
+            <div class="col-head">
+              <h3>${col}</h3>
+              <div class="count">${state.leads.filter(l=>l.stage===col).length}</div>
+            </div>
+            ${cards}
+          </div>
+        `;
+      }).join('');
+      bindDnD();
+    }
+
+    function bindDnD(){
+      document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('dragstart', e => {
+          card.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', card.dataset.id);
+        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+      });
+
+      document.querySelectorAll('.col').forEach(col => {
+        col.addEventListener('dragover', e => {
+          e.preventDefault();
+          col.classList.add('drag-over');
+        });
+        col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+        col.addEventListener('drop', e => {
+          e.preventDefault();
+          col.classList.remove('drag-over');
+          const id = e.dataTransfer.getData('text/plain');
+          moveLeadToStage(id, col.dataset.stage);
+        });
+      });
+    }
+
+    function moveLeadToStage(id, stage){
+      const lead = getLead(id);
+      if(!lead) return;
+      lead.stage = stage;
+      if(stage === 'Inspection Scheduled'){
+        lead.nextAction = 'Inspection reminder 24 hours before appointment';
+        if(lead.jobType === 'Insurance' && lead.claimStatus === 'Not Filed') lead.claimStatus = 'Pending Inspection';
+      }
+      if(stage === 'Proposal / Scope'){
+        lead.nextAction = lead.jobType === 'Insurance'
+          ? 'Prepare scope with inspection photos'
+          : 'Send retail estimate and financing option';
+      }
+      if(stage === 'Awaiting Claim / Decision'){
+        lead.nextAction = lead.jobType === 'Insurance'
+          ? 'Day 3 claim status check'
+          : '48-hour estimate follow-up';
+      }
+      if(stage === 'Production'){
+        lead.nextAction = 'Order materials and confirm install date';
+        if(lead.jobType === 'Insurance' && lead.claimStatus !== 'Approved') lead.claimStatus = 'Approved';
+      }
+      if(stage === 'Review Requested'){
+        lead.nextAction = 'Send Google review request and referral ask';
+      }
+      state.selectedLeadId = lead.id;
+      renderAll();
+      saveState(`Moved ${lead.name} to ${stage}.`);
+    }
+
+    function selectLead(id){
+      state.selectedLeadId = id;
+      document.getElementById('proposalLead').value = id;
+      renderTemplates();
+      renderProposal();
+      saveState(`Selected ${getLead(id).name}.`);
+    }
+
+    function addLeadFromForm(){
+      const lead = {
+        id: Date.now(),
+        name: document.getElementById('name').value || 'New Homeowner',
+        source: document.getElementById('source').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        address: document.getElementById('address').value,
+        stormDate: document.getElementById('stormDate').value,
+        roofType: document.getElementById('roofType').value,
+        damageType: document.getElementById('damageType').value,
+        claimStatus: document.getElementById('claimStatus').value,
+        jobType: document.getElementById('jobType').value,
+        inspectionDate: document.getElementById('inspectionDate').value,
+        adjusterDate: document.getElementById('adjusterDate').value,
+        stage: 'New Lead',
+        notes: document.getElementById('notes').value,
+        nextAction: document.getElementById('jobType').value === 'Insurance'
+          ? 'Verify claim filing and schedule inspection'
+          : 'Schedule inspection and prep retail estimate'
+      };
+      state.leads.unshift(lead);
+      state.selectedLeadId = lead.id;
+      renderAll();
+      saveState(`Created lead for ${lead.name}.`);
+    }
+
+    function fillSample(){
+      document.getElementById('name').value = 'Chris Nolan';
+      document.getElementById('source').value = 'Website Form';
+      document.getElementById('phone').value = '937-555-0125';
+      document.getElementById('email').value = 'chris.nolan@email.com';
+      document.getElementById('address').value = '605 Pine Hollow Rd, Dayton, OH';
+      document.getElementById('stormDate').value = '2026-04-30';
+      document.getElementById('jobType').value = 'Insurance';
+      document.getElementById('roofType').value = 'Architectural Shingle';
+      document.getElementById('damageType').value = 'Hail';
+      document.getElementById('claimStatus').value = 'Filed';
+      document.getElementById('inspectionDate').value = '2026-05-09T18:00';
+      document.getElementById('adjusterDate').value = '2026-05-12T09:30';
+      document.getElementById('notes').value = 'Website form from storm landing page. Wants evening inspection and has already called the carrier.';
+      renderPathHint();
+    }
+
+    function advanceLead(id){
+      const lead = getLead(id);
+      const idx = columns.indexOf(lead.stage);
+      if(idx < columns.length - 1) moveLeadToStage(id, columns[idx + 1]);
+    }
+
+    function scheduleInspection(id){
+      moveLeadToStage(id, 'Inspection Scheduled');
+    }
+
+    function deleteLead(id){
+      const lead = getLead(id);
+      if(!lead) return;
+      state.leads = state.leads.filter(l => String(l.id) !== String(id));
+      if(String(state.selectedLeadId) === String(id)) state.selectedLeadId = state.leads[0]?.id || null;
+      renderAll();
+      saveState(`Deleted ${lead.name}.`);
+    }
+
+    function seedStormLeads(){
+      const rows = [
+        ['Tyler Reed','Hail Trace Import','Insurance','Architectural Shingle','Hail','Not Filed'],
+        ['Angela Moss','Hail Trace Import','Insurance','3-Tab Shingle','Wind','Filed'],
+        ['Devon Pike','Hail Trace Import','Retail','Metal','Leak / Aging','Not Filed']
+      ];
+      rows.forEach((s,i) => state.leads.unshift({
+        id: Date.now()+i,
+        name: s[0],
+        source: s[1],
+        phone: `937-555-02${i+10}`,
+        email: `${s[0].toLowerCase().replace(' ','.')}@email.com`,
+        address: `${100+i} Storm View Dr, Dayton, OH`,
+        stormDate: '2026-04-27',
+        jobType: s[2],
+        roofType: s[3],
+        damageType: s[4],
+        claimStatus: s[5],
+        inspectionDate: '',
+        adjusterDate: '',
+        stage: 'New Lead',
+        notes: 'Imported from mapped storm path list with property and event tags.',
+        nextAction: s[2] === 'Insurance' ? 'Call homeowner and confirm claim path' : 'Call homeowner and offer retail inspection'
+      }));
+      renderAll();
+      saveState('Imported Hail Trace demo leads.');
+    }
+
+    function seedAICalls(){
+      const rows = [
+        ['Jordan Price','AI Call','Insurance','Flat / TPO','Wind','Pending Inspection'],
+        ['Megan Holt','AI Call','Retail','Architectural Shingle','Leak / Aging','Not Filed']
+      ];
+      rows.forEach((s,i) => state.leads.unshift({
+        id: Date.now()+i+100,
+        name: s[0],
+        source: s[1],
+        phone: `937-555-03${i+10}`,
+        email: `${s[0].toLowerCase().replace(' ','.')}@email.com`,
+        address: `${410+i} Call Center Ave, Troy, OH`,
+        stormDate: '2026-05-01',
+        jobType: s[2],
+        roofType: s[3],
+        damageType: s[4],
+        claimStatus: s[5],
+        inspectionDate: '',
+        adjusterDate: '',
+        stage: 'New Lead',
+        notes: 'Captured by AI voice intake with summary and urgency score.',
+        nextAction: 'Rep call-back within 5 minutes'
+      }));
+      renderAll();
+      saveState('Imported AI call demo leads.');
+    }
+
+    function loadSeedData(){
+      state.leads = seedData();
+      state.automations = [...defaultAutomations];
+      state.selectedLeadId = 1;
+      renderAll();
+      saveState('Reloaded default demo data.');
+    }
+
+    function clearAllData(){
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(TEMPLATE_KEY);
+      state.leads = seedData();
+      state.automations = [...defaultAutomations];
+      state.selectedLeadId = 1;
+      state.activeTemplate = 'claimText';
+      renderAll();
+      saveState('Cleared saved data and restored defaults.');
+    }
+
+    function exportData(){
+      const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'roofing-crm-demo-data.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      saveState('Exported demo data.');
+    }
+
+    function populateProposalLeadSelect(){
+      const select = document.getElementById('proposalLead');
+      select.innerHTML = state.leads.map(l => `<option value="${l.id}">${l.name} — ${l.jobType} — ${l.stage}</option>`).join('');
+      if(!state.selectedLeadId && state.leads[0]) state.selectedLeadId = state.leads[0].id;
+      if(state.selectedLeadId) select.value = state.selectedLeadId;
+    }
+
+    function openProposalBuilder(){
+      populateProposalLeadSelect();
+      renderProposal();
+      document.getElementById('proposalLead').scrollIntoView({behavior:'smooth', block:'center'});
+    }
+
+    function openProposalForLead(id){
+      state.selectedLeadId = id;
+      populateProposalLeadSelect();
+      renderTemplates();
+      renderProposal();
+      document.getElementById('proposalLead').scrollIntoView({behavior:'smooth', block:'center'});
+      saveState(`Opened proposal builder for ${getLead(id).name}.`);
+    }
+
+    function renderProposal(){
+      const selectedId = document.getElementById('proposalLead').value || state.selectedLeadId;
+      state.selectedLeadId = selectedId;
+      const lead = getLead(selectedId) || state.leads[0] || {};
+      populateProposalLeadSelect();
+
+      const tearoff = Number(document.getElementById('proposalTearoff').value || 0);
+      const material = Number(document.getElementById('proposalMaterial').value || 0);
+      const labor = Number(document.getElementById('proposalLabor').value || 0);
+      const upgrade = Number(document.getElementById('proposalUpgrade').value || 0);
+      const customer = Number(document.getElementById('proposalCustomerPortion').value || 0);
+      const squares = Number(document.getElementById('proposalSquares').value || 0);
+      const notes = document.getElementById('proposalNotes').value || '';
+      const subtotal = tearoff + material + labor + upgrade;
+      const balance = Math.max(subtotal - customer, 0);
+
+      document.getElementById('templateBox').textContent = buildTemplate(state.activeTemplate);
+
+      document.getElementById('proposalView').innerHTML = `
+        <h3>A Veteran's Touch Roofing Proposal</h3>
+        <small>Interactive demo scope for ${lead.name || 'Homeowner'}</small>
+
+        <div class="proposal-grid">
+          <div class="box">
+            <strong>Customer</strong>
+            <div style="margin-top:8px">${lead.name || '—'}</div>
+            <div>${lead.address || '—'}</div>
+            <div>${lead.phone || '—'}</div>
+            <div>${lead.email || '—'}</div>
+          </div>
+
+          <div class="box">
+            <strong>Job Details</strong>
+            <div style="margin-top:8px">Path: ${lead.jobType || '—'}</div>
+            <div>Roof Type: ${lead.roofType || '—'}</div>
+            <div>Damage Type: ${lead.damageType || '—'}</div>
+            <div>Claim Status: ${lead.claimStatus || '—'}</div>
+            <div>Storm Date: ${lead.stormDate || '—'}</div>
+          </div>
+        </div>
+
+        <div class="proposal-grid">
+          <div class="box">
+            <strong>Scope Summary</strong>
+            <div style="margin-top:8px">${notes}</div>
+            <div style="margin-top:10px">Estimated Squares: ${squares}</div>
+            <div>Inspection Date: ${lead.inspectionDate ? fmtDate(lead.inspectionDate) : 'Not set'}</div>
+            <div>Adjuster Date: ${lead.adjusterDate ? fmtDate(lead.adjusterDate) : 'Not set'}</div>
+          </div>
+
+          <div class="box">
+            <strong>Pricing</strong>
+            <div class="line"><span>Tear-off</span><span>${currency(tearoff)}</span></div>
+            <div class="line"><span>Materials</span><span>${currency(material)}</span></div>
+            <div class="line"><span>Labor</span><span>${currency(labor)}</span></div>
+            <div class="line"><span>Upgrades / Supplements</span><span>${currency(upgrade)}</span></div>
+            <div class="line"><strong>Total</strong><strong>${currency(subtotal)}</strong></div>
+            <div class="line"><span>${lead.jobType === 'Insurance' ? 'Deductible / customer portion' : 'Deposit'}</span><span>${currency(customer)}</span></div>
+            <div class="line"><strong>Remaining balance</strong><strong>${currency(balance)}</strong></div>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <strong>${lead.jobType === 'Insurance' ? 'Insurance workflow note' : 'Retail workflow note'}</strong>
+          <div style="margin-top:8px">
+            ${lead.jobType === 'Insurance'
+              ? 'This project follows the insurance path. Next steps include claim status follow-up, adjuster coordination, scope confirmation, and approved-scope scheduling.'
+              : 'This project follows the retail path. Next steps include estimate review, financing or payment approval, signed agreement, and production scheduling.'}
+          </div>
+        </div>
+      `;
+      saveState('Updated proposal view.');
+    }
+
+    function renderAll(){
+      renderMetrics();
+      renderPathHint();
+      renderAutomations();
+      renderKanban();
+      populateProposalLeadSelect();
+      renderTemplates();
+      renderProposal();
+    }
+
+    state.activeTemplate = localStorage.getItem(TEMPLATE_KEY) || 'claimText';
+    init();
+  </script>
+</body>
+</html>      position: sticky;
       top: 0;
       background: rgba(15,23,42,.92);
       backdrop-filter: blur(10px);
