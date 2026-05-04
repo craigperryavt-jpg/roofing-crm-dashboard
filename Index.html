@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roofing CRM Workflow Demo</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --card: #ffffff;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #22c55e;
+      --accent-2: #0ea5e9;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --retail: #a855f7;
+      --insurance: #22c55e;
+      --shadow: 0 12px 30px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+      color: var(--text);
+    }
+
+    header {
+      padding: 22px 26px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      position: sticky;
+      top: 0;
+      background: rgba(15,23,42,.92);
+      backdrop-filter: blur(10px);
+      z-index: 30;
+    }
+
+    .header-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .title h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -.02em;
+    }
+
+    .title p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button, .tag {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-weight: 600;
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--accent-2);
+      color: white;
+      box-shadow: var(--shadow);
+    }
+
+    button.secondary { background: #334155; }
+    button.success { background: var(--accent); color: #052e16; }
+    button.warn { background: var(--warn); color: #111827; }
+
+    .container {
+      padding: 24px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 22px;
+    }
+
+    .panel {
+      background: rgba(17,24,39,.9);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2, .panel h3 {
+      margin-top: 0;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .metric .value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .workflow-map {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(180px, 1fr));
+      gap: 14px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .stage {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 220px;
+    }
+
+    .stage h4 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .stage small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    .tag.insurance { background: rgba(34,197,94,.18); color: #bbf7d0; }
+    .tag.retail { background: rgba(168,85,247,.18); color: #e9d5ff; }
+    .tag.warn { background: rgba(245,158,11,.18); color: #fde68a; }
+
+    .forms-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding: 11px 12px;
+      font: inherit;
+    }
+
+    textarea { min-height: 92px; resize: vertical; }
+
+    .full { grid-column: 1 / -1; }
+
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(250px, 1fr));
+      gap: 16px;
+      overflow-x: auto;
+    }
+
+    .column {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 18px;
+      padding: 12px;
+      min-height: 420px;
+    }
+
+    .column h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .lead-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .lead-card h4 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+
+    .lead-meta {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .lead-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .lead-actions button {
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      box-shadow: none;
+    }
+
+    .automation-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .automation-item {
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .photos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .photo {
+      background: linear-gradient(135deg, #1e293b, #334155);
+      border-radius: 14px;
+      min-height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #cbd5e1;
+      font-size: 13px;
+      border: 1px dashed rgba(255,255,255,.18);
+    }
+
+    .path-box {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+
+    .path-box strong { display: block; margin-bottom: 6px; }
+
+    @media (max-width: 1024px) {
+      .top-grid, .forms-grid { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      .metrics { grid-template-columns: 1fr; }
+      .container { padding: 14px; }
+      header { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-wrap">
+      <div class="title">
+        <h1>Roofing CRM Workflow Demo</h1>
+        <p>Fuzen-style interactive dashboard for storm, insurance, and retail roofing jobs.</p>
+      </div>
+      <div class="header-actions">
+        <button class="success" onclick="seedStormLeads()">Import Hail Trace Leads</button>
+        <button onclick="seedAICalls()">Add AI Call Leads</button>
+        <button class="secondary" onclick="resetDemo()">Reset Demo</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="top-grid">
+      <div class="panel">
+        <h2>Pipeline Overview</h2>
+        <p style="color: var(--muted);">Stages cover lead capture, inspection, proposal, insurance workflow, production, and review request automation.</p>
+        <div class="metrics" id="metrics"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Conditional Workflow</h2>
+        <div class="path-box">
+          <strong>Insurance Path</strong>
+          Website/AI/Hail Trace → Inspection Scheduled → Damage Confirmed → Claim Filed / Pending → Adjuster Appointment → Approved Scope → Build Scheduled → Review Request
+        </div>
+        <div class="path-box">
+          <strong>Retail Path</strong>
+          Website/AI/Hail Trace → Inspection Scheduled → Retail Estimate → Proposal Sent → Follow-up → Contract Signed → Build Scheduled → Review Request
+        </div>
+        <div class="chip-row">
+          <span class="tag insurance">Insurance automation</span>
+          <span class="tag retail">Retail automation</span>
+          <span class="tag warn">3-day claim check</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Lead Capture</h2>
+      <div class="forms-grid">
+        <label>
+          Homeowner name
+          <input id="name" placeholder="John Carter" />
+        </label>
+        <label>
+          Source
+          <select id="source">
+            <option>Website Form</option>
+            <option>AI Call</option>
+            <option>Hail Trace Import</option>
+            <option>Referral</option>
+          </select>
+        </label>
+        <label>
+          Phone
+          <input id="phone" placeholder="937-555-0188" />
+        </label>
+        <label>
+          Email
+          <input id="email" placeholder="john@example.com" />
+        </label>
+        <label>
+          Job type path
+          <select id="jobType" onchange="renderPathHint()">
+            <option value="Insurance">Insurance</option>
+            <option value="Retail">Retail</option>
+          </select>
+        </label>
+        <label>
+          Roof type
+          <select id="roofType">
+            <option>Architectural Shingle</option>
+            <option>3-Tab Shingle</option>
+            <option>Metal</option>
+            <option>Flat / TPO</option>
+            <option>Tile</option>
+          </select>
+        </label>
+        <label>
+          Damage type
+          <select id="damageType">
+            <option>Hail</option>
+            <option>Wind</option>
+            <option>Leak / Aging</option>
+            <option>Tree Impact</option>
+            <option>Missing Shingles</option>
+          </select>
+        </label>
+        <label>
+          Insurance claim status
+          <select id="claimStatus">
+            <option>Not Filed</option>
+            <option>Filed</option>
+            <option>Pending Inspection</option>
+            <option>Adjuster Scheduled</option>
+            <option>Approved</option>
+            <option>Denied</option>
+          </select>
+        </label>
+        <label class="full">
+          Notes
+          <textarea id="notes" placeholder="Caller reported hail event in neighborhood, possible soft metals hit, wants Saturday inspection."></textarea>
+        </label>
+      </div>
+      <div class="lead-actions" style="margin-top:14px;">
+        <button class="success" onclick="addLeadFromForm()">Create Lead</button>
+        <button class="secondary" onclick="fillSample()">Load Sample</button>
+      </div>
+      <div id="pathHint" class="path-box"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Workflow Stages</h2>
+      <div class="workflow-map">
+        <div class="stage"><h4>1. Lead Capture</h4><small>Website forms, AI call intake, Hail Trace import</small><div class="chip-row"><span class="tag">Form webhook</span><span class="tag">AI transcript</span><span class="tag">CSV import</span></div></div>
+        <div class="stage"><h4>2. Qualification</h4><small>Verify contact, storm date, roof age, insurance vs retail</small><div class="chip-row"><span class="tag insurance">Claim path</span><span class="tag retail">Cash path</span></div></div>
+        <div class="stage"><h4>3. Inspection</h4><small>Schedule inspection, assign rep, upload photos and notes</small><div class="chip-row"><span class="tag">Calendar sync</span><span class="tag">Photo checklist</span></div></div>
+        <div class="stage"><h4>4. Proposal</h4><small>Build insurance scope or retail estimate with photos</small><div class="chip-row"><span class="tag">Xactimate notes</span><span class="tag">Retail pricing</span></div></div>
+        <div class="stage"><h4>5. Follow-up</h4><small>Day 3 claim status text/email, adjuster reminders</small><div class="chip-row"><span class="tag warn">Claim check</span><span class="tag">Adjuster alert</span></div></div>
+        <div class="stage"><h4>6. Production</h4><small>Order materials, supplements, install, final QC</small><div class="chip-row"><span class="tag">Build board</span><span class="tag">Completion docs</span></div></div>
+        <div class="stage"><h4>7. Reputation</h4><small>Request Google/Facebook review after completion</small><div class="chip-row"><span class="tag">SMS review ask</span><span class="tag">Email thank-you</span></div></div>
+      </div>
+    </section>
+
+    <section class="top-grid">
+      <div class="panel">
+        <h2>Interactive Demo Board</h2>
+        <div class="kanban" id="kanban"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Automations</h2>
+        <div class="automation-list" id="automations"></div>
+        <h3 style="margin-top:18px;">Proposal Photos</h3>
+        <div class="photos">
+          <div class="photo">Front Elevation</div>
+          <div class="photo">Hail Hits</div>
+          <div class="photo">Soft Metals</div>
+          <div class="photo">Test Square</div>
+          <div class="photo">Interior Leak</div>
+          <div class="photo">Scope Summary</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const columns = [
+      'New Lead',
+      'Inspection Scheduled',
+      'Proposal / Scope',
+      'Awaiting Claim / Decision',
+      'Production',
+      'Review Requested'
+    ];
+
+    const leads = [
+      {
+        id: 1,
+        name: 'Mark Benson',
+        source: 'Hail Trace Import',
+        phone: '937-555-0101',
+        email: 'mark.benson@email.com',
+        roofType: 'Architectural Shingle',
+        damageType: 'Hail',
+        claimStatus: 'Filed',
+        jobType: 'Insurance',
+        stage: 'Awaiting Claim / Decision',
+        notes: 'Inspection complete. Soft metals and 9 hail hits in test square. Day 3 claim check queued.',
+        nextAction: 'Text claim status check on day 3'
+      },
+      {
+        id: 2,
+        name: 'Lisa Turner',
+        source: 'Website Form',
+        phone: '937-555-0102',
+        email: 'lisa.turner@email.com',
+        roofType: 'Metal',
+        damageType: 'Leak / Aging',
+        claimStatus: 'Not Filed',
+        jobType: 'Retail',
+        stage: 'Proposal / Scope',
+        notes: 'Retail estimate pending with photo set and financing option.',
+        nextAction: 'Send proposal follow-up tomorrow'
+      },
+      {
+        id: 3,
+        name: 'Sam Delaney',
+        source: 'AI Call',
+        phone: '937-555-0103',
+        email: 'sam.delaney@email.com',
+        roofType: '3-Tab Shingle',
+        damageType: 'Wind',
+        claimStatus: 'Pending Inspection',
+        jobType: 'Insurance',
+        stage: 'Inspection Scheduled',
+        notes: 'AI captured storm date and leak over garage. Saturday 10 AM inspection.',
+        nextAction: 'Inspection reminder 24 hours before appointment'
+      },
+      {
+        id: 4,
+        name: 'Nina Wallace',
+        source: 'Referral',
+        phone: '937-555-0104',
+        email: 'nina.wallace@email.com',
+        roofType: 'Architectural Shingle',
+        damageType: 'Missing Shingles',
+        claimStatus: 'Approved',
+        jobType: 'Insurance',
+        stage: 'Production',
+        notes: 'Approved scope received. Waiting on shingle color selection and install date.',
+        nextAction: 'Confirm build date and material order'
+      }
+    ];
+
+    const automations = [
+      'Instant confirmation text after website form or AI call submission.',
+      'Auto-tag storm leads imported from Hail Trace by neighborhood and storm date.',
+      'Inspection reminder text 24 hours before appointment with reschedule link.',
+      'Proposal email with photos, scope summary, and financing or deductible guidance.',
+      'Day 3 insurance claim status text/email if claim status is Filed or Pending Inspection.',
+      'Adjuster appointment reminder 24 hours before scheduled meeting.',
+      'Post-project thank-you text and review request 2 days after completion.'
+    ];
+
+    function renderMetrics() {
+      const total = leads.length;
+      const insurance = leads.filter(l => l.jobType === 'Insurance').length;
+      const retail = leads.filter(l => l.jobType === 'Retail').length;
+      const pending = leads.filter(l => ['Filed','Pending Inspection','Adjuster Scheduled'].includes(l.claimStatus)).length;
+
+      document.getElementById('metrics').innerHTML = `
+        <div class="metric"><div class="value">${total}</div><div class="label">Active leads</div></div>
+        <div class="metric"><div class="value">${insurance}</div><div class="label">Insurance jobs</div></div>
+        <div class="metric"><div class="value">${retail}</div><div class="label">Retail jobs</div></div>
+        <div class="metric"><div class="value">${pending}</div><div class="label">Claim follow-ups due</div></div>
+      `;
+    }
+
+    function renderKanban() {
+      const board = document.getElementById('kanban');
+      board.innerHTML = columns.map(col => {
+        const cards = leads.filter(l => l.stage === col).map(l => `
+          <div class="lead-card">
+            <h4>${l.name}</h4>
+            <div class="lead-meta">
+              ${l.source}<br>
+              ${l.jobType} · ${l.roofType}<br>
+              Damage: ${l.damageType}<br>
+              Claim: ${l.claimStatus}<br>
+              Next: ${l.nextAction}
+            </div>
+            <div class="chip-row">
+              <span class="tag ${l.jobType === 'Insurance' ? 'insurance' : 'retail'}">${l.jobType}</span>
+              <span class="tag">${l.damageType}</span>
+            </div>
+            <div class="lead-actions">
+              <button onclick="advanceLead(${l.id})">Advance</button>
+              <button class="secondary" onclick="scheduleInspection(${l.id})">Schedule</button>
+            </div>
+          </div>
+        `).join('') || '<div class="lead-meta">No leads in this stage.</div>';
+
+        return `<div class="column"><h3>${col}</h3>${cards}</div>`;
+      }).join('');
+    }
+
+    function renderAutomations() {
+      document.getElementById('automations').innerHTML =
+        automations.map(a => `<div class="automation-item">${a}</div>`).join('');
+    }
+
+    function renderPathHint() {
+      const jobType = document.getElementById('jobType').value;
+      const box = document.getElementById('pathHint');
+      box.innerHTML = jobType === 'Insurance'
+        ? '<strong>Insurance conditional path</strong>Lead enters claim workflow, receives day 3 claim check, then adjuster appointment reminders and approved-scope follow-up.'
+        : '<strong>Retail conditional path</strong>Lead skips claim workflow and receives estimate follow-up, financing prompts, and close reminders.';
+    }
+
+    function addLeadFromForm() {
+      const lead = {
+        id: Date.now(),
+        name: document.getElementById('name').value || 'New Homeowner',
+        source: document.getElementById('source').value,
+        phone: document.getElementById('phone').value,
+        email: document.getElementById('email').value,
+        roofType: document.getElementById('roofType').value,
+        damageType: document.getElementById('damageType').value,
+        claimStatus: document.getElementById('claimStatus').value,
+        jobType: document.getElementById('jobType').value,
+        stage: 'New Lead',
+        notes: document.getElementById('notes').value,
+        nextAction: document.getElementById('jobType').value === 'Insurance'
+          ? 'Verify claim filing and schedule inspection'
+          : 'Schedule inspection and prep retail estimate'
+      };
+      leads.unshift(lead);
+      renderAll();
+    }
+
+    function fillSample() {
+      document.getElementById('name').value = 'Chris Nolan';
+      document.getElementById('source').value = 'Website Form';
+      document.getElementById('phone').value = '937-555-0125';
+      document.getElementById('email').value = 'chris.nolan@email.com';
+      document.getElementById('jobType').value = 'Insurance';
+      document.getElementById('roofType').value = 'Architectural Shingle';
+      document.getElementById('damageType').value = 'Hail';
+      document.getElementById('claimStatus').value = 'Filed';
+      document.getElementById('notes').value = 'Website form from storm campaign landing page. Wants evening inspection and has already called carrier.';
+      renderPathHint();
+    }
+
+    function advanceLead(id) {
+      const lead = leads.find(l => l.id === id);
+      const idx = columns.indexOf(lead.stage);
+      if (idx < columns.length - 1) lead.stage = columns[idx + 1];
+
+      if (lead.stage === 'Proposal / Scope') {
+        lead.nextAction = lead.jobType === 'Insurance'
+          ? 'Prepare scope with inspection photos'
+          : 'Send retail estimate and financing option';
+      }
+      if (lead.stage === 'Awaiting Claim / Decision') {
+        lead.nextAction = lead.jobType === 'Insurance'
+          ? 'Day 3 claim status check'
+          : '48-hour estimate follow-up';
+      }
+      if (lead.stage === 'Production') {
+        lead.nextAction = 'Order materials and confirm install date';
+      }
+      if (lead.stage === 'Review Requested') {
+        lead.nextAction = 'Send Google review request and referral ask';
+      }
+      renderAll();
+    }
+
+    function scheduleInspection(id) {
+      const lead = leads.find(l => l.id === id);
+      lead.stage = 'Inspection Scheduled';
+      lead.nextAction = 'Inspection reminder 24 hours before appointment';
+      if (lead.jobType === 'Insurance' && lead.claimStatus === 'Not Filed') {
+        lead.claimStatus = 'Pending Inspection';
+      }
+      renderAll();
+    }
+
+    function seedStormLeads() {
+      const stormSet = [
+        ['Tyler Reed','Hail Trace Import','Insurance','Architectural Shingle','Hail','Not Filed'],
+        ['Angela Moss','Hail Trace Import','Insurance','3-Tab Shingle','Wind','Filed'],
+        ['Devon Pike','Hail Trace Import','Retail','Metal','Leak / Aging','Not Filed']
+      ];
+      stormSet.forEach((s, i) => leads.unshift({
+        id: Date.now() + i,
+        name: s[0],
+        source: s[1],
+        phone: `937-555-02${i+10}`,
+        email: `${s[0].toLowerCase().replace(' ','.')}@email.com`,
+        jobType: s[2],
+        roofType: s[3],
+        damageType: s[4],
+        claimStatus: s[5],
+        stage: 'New Lead',
+        notes: 'Imported from mapped storm path list with property and event tags.',
+        nextAction: s[2] === 'Insurance'
+          ? 'Call homeowner and confirm claim path'
+          : 'Call homeowner and offer retail inspection'
+      }));
+      renderAll();
+    }
+
+    function seedAICalls() {
+      const aiSet = [
+        ['Jordan Price','AI Call','Insurance','Flat / TPO','Wind','Pending Inspection'],
+        ['Megan Holt','AI Call','Retail','Architectural Shingle','Leak / Aging','Not Filed']
+      ];
+      aiSet.forEach((s, i) => leads.unshift({
+        id: Date.now() + i + 100,
+        name: s[0],
+        source: s[1],
+        phone: `937-555-03${i+10}`,
+        email: `${s[0].toLowerCase().replace(' ','.')}@email.com`,
+        jobType: s[2],
+        roofType: s[3],
+        damageType: s[4],
+        claimStatus: s[5],
+        stage: 'New Lead',
+        notes: 'Captured by AI voice intake with summary and urgency score.',
+        nextAction: 'Rep call-back within 5 minutes'
+      }));
+      renderAll();
+    }
+
+    function resetDemo() {
+      location.reload();
+    }
+
+    function renderAll() {
+      renderMetrics();
+      renderKanban();
+      renderAutomations();
+      renderPathHint();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
